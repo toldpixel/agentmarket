@@ -1,25 +1,26 @@
 services:
   broker:
-      build:
-        context: ./Broker
-        dockerfile: Dockerfile
-      container_name: broker
-      env_file:
-        - ./Broker/.env
-      restart: unless-stopped
-      environment:
-        NODE_ENV: production
-      command: >
-        bash -c "
-        npm run start
-        "
-      labels:
-      - traefik.enable=true
-      - traefik.http.routers.perplexity.rule=Host(`broker.${DOMAIN_NAME}`)
-      - traefik.http.routers.perplexity.entrypoints=web,websecure
-      - traefik.http.routers.perplexity.tls=true
-      - traefik.http.routers.perplexity.tls.certresolver=mytlschallenge
-      - traefik.http.services.perplexity.loadbalancer.server.port=5022
-      networks:
+    build:
+      context: ./Broker
+      dockerfile: Dockerfile
+    container_name: broker
+    env_file:
+      - ./Broker/.env
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+    command: >
+      bash -c "npm run start"
+    networks:
       - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.broker.rule=Host(`broker.${DOMAIN_NAME}`)
+      - traefik.http.routers.broker.entrypoints=web,websecure
+      - traefik.http.routers.broker.tls=true
+      - traefik.http.routers.broker.tls.certresolver=mytlschallenge
+      - traefik.http.services.broker.loadbalancer.server.port=5022
 
+networks:
+  web:
+    external: true
