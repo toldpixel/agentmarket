@@ -23,5 +23,5 @@ jobs:
           script: |
             cd /home/xorpad/docker/agent-docker
             git pull origin master
-            npm install --production
-            pm2 restart agent
+            docker compose down
+            docker compose up -d --build

@@ -1,0 +1,17 @@
+services:
+  broker:
+      build:
+        context: ./Broker
+        dockerfile: Dockerfile
+      container_name: sitemap-crawler
+      env_file:
+        - ./Broker/.env
+      restart: unless-stopped
+      environment:
+        NODE_ENV: production
+      command: >
+        bash -c "
+        npm run start
+        "
+      ports:
+        - "5022:5022"
