@@ -24,4 +24,4 @@ jobs:
             cd /home/xorpad/docker/agent-docker
             git pull origin master
             npm install --production
-            pm2 restart your-app-name
+            pm2 restart agent
