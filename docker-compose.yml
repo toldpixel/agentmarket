@@ -20,6 +20,6 @@ services:
       - traefik.http.routers.perplexity.tls=true
       - traefik.http.routers.perplexity.tls.certresolver=mytlschallenge
       - traefik.http.services.perplexity.loadbalancer.server.port=5022
-  networks:
-    web:
-      external: true
+      networks:
+      - web
+
