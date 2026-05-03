@@ -13,5 +13,13 @@ services:
         bash -c "
         npm run start
         "
-      ports:
-        - "5022:5022"
+      labels:
+      - traefik.enable=true
+      - traefik.http.routers.perplexity.rule=Host(`broker.${DOMAIN_NAME}`)
+      - traefik.http.routers.perplexity.entrypoints=web,websecure
+      - traefik.http.routers.perplexity.tls=true
+      - traefik.http.routers.perplexity.tls.certresolver=mytlschallenge
+      - traefik.http.services.perplexity.loadbalancer.server.port=5022
+  networks:
+    web:
+      external: true
