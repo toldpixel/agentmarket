@@ -8,7 +8,9 @@ import cors from "cors";
 
 dotenv.config();
 
-const app = createMcpExpressApp();
+const app = createMcpExpressApp({
+  allowedHosts: ["broker.luchsnode.com"],
+});
 const MCP_PORT = process.env.MCP_PORT
   ? Number.parseInt(process.env.MCP_PORT, 10)
   : 3000;
