@@ -3,7 +3,7 @@ services:
       build:
         context: ./Broker
         dockerfile: Dockerfile
-      container_name: sitemap-crawler
+      container_name: broker
       env_file:
         - ./Broker/.env
       restart: unless-stopped
