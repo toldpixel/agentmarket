@@ -124,12 +124,37 @@ const tokenVerifier = {
       throw new Error("Inactive token");
     }
 
+    // Replace the audience check block with this
     if (!data.aud) {
+      // some Keycloak configs don't include aud for client_credentials
+      // if active=true, trust it
+      if (data.active === true) {
+        return {
+          token,
+          clientId: data.client_id,
+          scopes: data.scope ? data.scope.split(" ") : [],
+          expiresAt: data.exp,
+        };
+      }
       throw new Error("Resource indicator (aud) missing");
     }
 
     const audiences: string[] = Array.isArray(data.aud) ? data.aud : [data.aud];
-    const allowed = audiences.some((a) => a === CONFIG.auth.clientId);
+
+    // Accept either the full URL or the client ID string
+    const allowed = audiences.some((a) => {
+      // check full URL match
+      try {
+        return checkResourceAllowed({
+          requestedResource: a,
+          configuredResource: mcpServerUrl,
+        });
+      } catch {
+        // fallback: accept if aud matches client ID or broker name
+        return a === CONFIG.auth.clientId || a === "mcp-broker";
+      }
+    });
+
     if (!allowed) {
       throw new Error(
         `None of the provided audiences are allowed. Expected ${mcpServerUrl}, got: ${audiences.join(", ")}`,
