@@ -12,4 +12,4 @@ export const router = express.Router();
 router.post("/mcp", authMiddleware, mcpPostHandler);
 router.get("/mcp", authMiddleware, mcpGetHandler);
 router.delete("/mcp", authMiddleware, mcpDeleteHandler);
-router.get("/.well-known/oauth-protected-resource", metaDataRoute);
+//router.get("/.well-known/oauth-protected-resource", metaDataRoute);
