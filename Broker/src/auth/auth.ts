@@ -21,7 +21,7 @@ const CONFIG = {
 
 function createOAuthUrls() {
   const authBaseUrl = new URL(
-    `http://${CONFIG.auth.host}:${CONFIG.auth.port}/realms/${CONFIG.auth.realm}/`,
+    `https://${CONFIG.auth.host}:${CONFIG.auth.port}/realms/${CONFIG.auth.realm}/`,
   );
   return {
     issuer: authBaseUrl.toString(),
