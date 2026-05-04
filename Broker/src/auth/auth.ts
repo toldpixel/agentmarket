@@ -2,6 +2,9 @@ import { OAuthMetadata } from "@modelcontextprotocol/sdk/shared/auth.js";
 import { checkResourceAllowed } from "@modelcontextprotocol/sdk/shared/auth-utils.js";
 import { getOAuthProtectedResourceMetadataUrl } from "@modelcontextprotocol/sdk/server/auth/router.js";
 import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const CONFIG = {
   host: process.env.MCP_HOST || "localhost",
