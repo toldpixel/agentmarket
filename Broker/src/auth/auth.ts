@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// config
 const CONFIG = {
   host: process.env.MCP_HOST || "localhost",
   port: Number(process.env.MCP_PORT) || 5022,
