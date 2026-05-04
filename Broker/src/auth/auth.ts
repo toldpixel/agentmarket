@@ -127,12 +127,7 @@ const tokenVerifier = {
     }
 
     const audiences: string[] = Array.isArray(data.aud) ? data.aud : [data.aud];
-    const allowed = audiences.some((a) =>
-      checkResourceAllowed({
-        requestedResource: a,
-        configuredResource: mcpServerUrl,
-      }),
-    );
+    const allowed = audiences.some((a) => a === CONFIG.auth.clientId);
     if (!allowed) {
       throw new Error(
         `None of the provided audiences are allowed. Expected ${mcpServerUrl}, got: ${audiences.join(", ")}`,
