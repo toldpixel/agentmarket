@@ -5,6 +5,15 @@ import { registerAllTools } from "./tools/index.js";
 import { router } from "./routes/mcp_endpoints.js";
 import dotenv from "dotenv";
 import cors from "cors";
+import {
+  createRequestLogger,
+  oauthMetadata,
+  mcpServerUrl,
+} from "./auth/auth.js";
+import {
+  mcpAuthMetadataRouter,
+  getOAuthProtectedResourceMetadataUrl,
+} from "@modelcontextprotocol/sdk/server/auth/router.js";
 
 dotenv.config();
 
@@ -22,14 +31,34 @@ export const server = new McpServer({
 });
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    exposedHeaders: ["Mcp-Session-Id"],
+  }),
+);
+app.use(createRequestLogger());
+app.use(
+  mcpAuthMetadataRouter({
+    oauthMetadata,
+    resourceServerUrl: mcpServerUrl,
+    scopesSupported: ["mcp:tools"],
+    resourceName: "MCP Demo Server",
+  }),
+);
 app.use(router);
+
 registerAllTools(server);
 
 (async () => {
   try {
     app.listen(MCP_PORT, HOST, function () {
       console.error(`starting app on port: ${MCP_PORT}`);
+      console.log(`🚀 MCP Server running on ${mcpServerUrl.origin}`);
+      console.log(`📡 MCP endpoint available at ${mcpServerUrl.origin}`);
+      console.log(
+        `🔐 OAuth metadata available at ${getOAuthProtectedResourceMetadataUrl(mcpServerUrl)}`,
+      );
     });
   } catch (error) {
     console.error(error);
