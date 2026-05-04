@@ -65,12 +65,10 @@ export const oauthMetadata: OAuthMetadata = {
 
 const tokenVerifier = {
   verifyAccessToken: async (token: string) => {
-    const endpoint = oauthMetadata.introspection_endpoint;
+    console.log("[auth] verifyAccessToken called");
 
-    if (!endpoint) {
-      console.error("[auth] no introspection endpoint in metadata");
-      throw new Error("No token verification endpoint available in metadata");
-    }
+    const endpoint = oauthMetadata.introspection_endpoint;
+    console.log("[auth] introspection endpoint:", endpoint);
 
     const params = new URLSearchParams({
       token: token,
@@ -79,85 +77,84 @@ const tokenVerifier = {
 
     if (CONFIG.auth.clientSecret) {
       params.set("client_secret", CONFIG.auth.clientSecret);
+    } else {
+      console.warn("[auth] WARNING: client_secret is empty!");
     }
 
     let response: Response;
     try {
+      console.log("[auth] calling introspection...");
       response = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params.toString(),
       });
+      console.log("[auth] introspection status:", response.status);
     } catch (e) {
-      console.error("[auth] introspection fetch threw", e);
+      console.error("[auth] introspection fetch threw:", e);
       throw e;
     }
 
-    if (!response.ok) {
-      const txt = await response.text();
-      console.error("[auth] introspection non-OK", { status: response.status });
+    const txt = await response.text();
+    console.log("[auth] introspection raw response:", txt);
 
-      try {
-        const obj = JSON.parse(txt);
-        console.log(JSON.stringify(obj, null, 2));
-      } catch {
-        console.error(txt);
-      }
-      throw new Error(`Invalid or expired token: ${txt}`);
+    if (!response.ok) {
+      throw new Error(`Introspection failed: ${txt}`);
     }
 
     let data: any;
     try {
-      data = await response.json();
+      data = JSON.parse(txt);
     } catch (e) {
-      const txt = await response.text();
-      console.error("[auth] failed to parse introspection JSON", {
-        error: String(e),
-        body: txt,
-      });
+      console.error("[auth] failed to parse JSON:", txt);
       throw e;
     }
+
+    console.log("[auth] introspection data:", JSON.stringify(data, null, 2));
 
     if (data.active === false) {
       throw new Error("Inactive token");
     }
 
-    // Replace the audience check block with this
-    if (!data.aud) {
-      // some Keycloak configs don't include aud for client_credentials
-      // if active=true, trust it
-      if (data.active === true) {
-        return {
-          token,
-          clientId: data.client_id,
-          scopes: data.scope ? data.scope.split(" ") : [],
-          expiresAt: data.exp,
-        };
-      }
-      throw new Error("Resource indicator (aud) missing");
+    console.log("[auth] aud claim:", data.aud);
+    console.log("[auth] mcpServerUrl:", mcpServerUrl.toString());
+
+    // audiences check
+    const audiences: string[] = Array.isArray(data.aud)
+      ? data.aud
+      : data.aud
+        ? [data.aud]
+        : [];
+
+    console.log("[auth] audiences:", audiences);
+
+    if (audiences.length === 0) {
+      console.warn("[auth] no aud claim — trusting active token");
+      return {
+        token,
+        clientId: data.client_id,
+        scopes: data.scope ? data.scope.split(" ") : [],
+        expiresAt: data.exp,
+      };
     }
 
-    const audiences: string[] = Array.isArray(data.aud) ? data.aud : [data.aud];
-
-    // Accept either the full URL or the client ID string
     const allowed = audiences.some((a) => {
-      // check full URL match
       try {
-        return checkResourceAllowed({
+        const result = checkResourceAllowed({
           requestedResource: a,
           configuredResource: mcpServerUrl,
         });
-      } catch {
-        // fallback: accept if aud matches client ID or broker name
+        console.log(`[auth] checkResourceAllowed(${a}) =`, result);
+        return result;
+      } catch (e) {
+        console.log(`[auth] checkResourceAllowed(${a}) threw:`, e);
         return a === CONFIG.auth.clientId || a === "mcp-broker";
       }
     });
 
     if (!allowed) {
       throw new Error(
-        `None of the provided audiences are allowed. Expected ${mcpServerUrl}, got: ${audiences.join(", ")}`,
+        `Audience not allowed. Expected ${mcpServerUrl}, got: ${audiences.join(", ")}`,
       );
     }
 
