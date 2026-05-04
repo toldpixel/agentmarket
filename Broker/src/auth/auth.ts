@@ -53,7 +53,9 @@ export function createRequestLogger() {
   };
 }
 
-export const mcpServerUrl = new URL(`https://${CONFIG.host}:${CONFIG.port}`);
+export const mcpServerUrl = new URL(
+  process.env.MCP_PUBLIC_URL || `https://${CONFIG.host}/mcp`,
+);
 const oauthUrls = createOAuthUrls();
 
 export const oauthMetadata: OAuthMetadata = {
