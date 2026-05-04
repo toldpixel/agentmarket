@@ -4,6 +4,7 @@ import {
   mcpGetHandler,
   mcpDeleteHandler,
 } from "../controllers/mcpController.js";
+import { metaDataRoute } from "../controllers/authController.js";
 import { authMiddleware } from "../auth/auth.js";
 
 export const router = express.Router();
@@ -11,3 +12,4 @@ export const router = express.Router();
 router.post("/mcp", authMiddleware, mcpPostHandler);
 router.get("/mcp", authMiddleware, mcpGetHandler);
 router.delete("/mcp", authMiddleware, mcpDeleteHandler);
+router.get("/.well-known/oauth-protected-resource", metaDataRoute);
