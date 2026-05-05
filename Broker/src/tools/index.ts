@@ -8,35 +8,30 @@ import { approveCompletion } from "./posting_side/approve_completion.js";
 import { cancelAsk } from "./posting_side/cancel_ask.js";
 import { placeAsk } from "./posting_side/place_ask.js";
 
+type ToolDef = {
+  name: string;
+  config: { description: string; inputSchema: any };
+  cb: (args: any, authInfo?: any) => Promise<any>;
+};
+
+function register(server: McpServer, tool: ToolDef) {
+  server.registerTool(tool.name, tool.config, async (args: any, extra: any) =>
+    tool.cb(args, extra?.authInfo),
+  );
+}
+
 export function registerAllTools(server: McpServer) {
   // --- Discovery ---
-  server.registerTool(getOrderBook.name, getOrderBook.config, getOrderBook.cb);
-
-  server.registerTool(
-    getMarketStats.name,
-    getMarketStats.config,
-    getMarketStats.cb,
-  );
+  register(server, getOrderBook);
+  register(server, getMarketStats);
 
   // --- Worker (bid side) ---
-  server.registerTool(placeBid.name, placeBid.config, placeBid.cb);
-
-  server.registerTool(withdrawBid.name, withdrawBid.config, withdrawBid.cb);
-
-  server.registerTool(
-    submitCompletion.name,
-    submitCompletion.config,
-    submitCompletion.cb,
-  );
+  register(server, placeBid);
+  register(server, withdrawBid);
+  register(server, submitCompletion);
 
   // --- Poster (ask side) ---
-  server.registerTool(placeAsk.name, placeAsk.config, placeAsk.cb);
-
-  server.registerTool(cancelAsk.name, cancelAsk.config, cancelAsk.cb);
-
-  server.registerTool(
-    approveCompletion.name,
-    approveCompletion.config,
-    approveCompletion.cb,
-  );
+  register(server, placeAsk);
+  register(server, cancelAsk);
+  register(server, approveCompletion);
 }

@@ -1,6 +1,13 @@
 // src/tiers.ts
 import z from "zod";
 
+export const SCOPE_TOOLS: Record<string, string[]> = {
+  "discovery:market": ["get_market_stats", "get_order_book"],
+  "posting:side": ["cancel_ask", "place_ask", "approve_completion"],
+  "worker:side": ["place_bid", "submit_completion", "withdraw_bid"],
+  "mcp:tools": ["listTools", "getToolSchema"],
+};
+
 export const RegisterSchema = z.object({
   agentName: z
     .string()
@@ -14,16 +21,10 @@ export const RegisterSchema = z.object({
 export type Tier = "free" | "standard" | "premium" | "internal";
 
 export const TIER_SCOPES: Record<Tier, string[]> = {
-  free: ["job:read"],
-  standard: ["job:read", "job:submit"],
-  premium: ["job:read", "job:submit", "job:cancel", "worker:register"],
-  internal: [
-    "job:read",
-    "job:submit",
-    "job:cancel",
-    "worker:register",
-    "mcp:tools",
-  ],
+  free: ["discovery:market"],
+  standard: ["discovery:market", "posting:side"],
+  premium: ["discovery:market", "posting:side", "worker:side"],
+  internal: ["discovery:market", "posting:side", "worker:side", "mcp:tools"],
 };
 
 // pre-shared registration keys per tier

@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+import { requireToolScope } from "../../utils/scopes.js";
 
 const inputSchema = z.object({
   jobId: z.string().uuid(),
@@ -20,7 +22,13 @@ export const approveCompletion = {
     description: "Poster approves submitted work — releases escrow to worker",
     inputSchema,
   },
-  cb: async (args: ApproveCompletionInput): Promise<CallToolResult> => {
+  cb: async (
+    args: ApproveCompletionInput,
+    authInfo?: AuthInfo,
+  ): Promise<CallToolResult> => {
+    requireToolScope("approve_completion", authInfo?.scopes ?? []);
+
+    // tool logic here
     return { content: [{ type: "text", text: "..." }] };
   },
 };

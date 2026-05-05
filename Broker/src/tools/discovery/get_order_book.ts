@@ -1,7 +1,7 @@
-import { SkillSymbolSchema } from "../../types/order.js";
-import type { SkillSymbol } from "../../types/order.js";
+import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import { requireToolScope } from "../../utils/scopes.js";
 
 const schema = z.object({
   skillSymbol: z
@@ -23,11 +23,11 @@ export const getOrderBook = {
     description: "Get current bids and asks for a skill category",
     inputSchema: schema,
   },
-  cb: async ({
-    skillSymbol,
-    depth,
-  }: z.infer<typeof schema>): Promise<CallToolResult> => {
-    // return top N bids and asks with EAP scores
+  cb: async (
+    { skillSymbol, depth }: z.infer<typeof schema>,
+    authInfo?: AuthInfo,
+  ): Promise<CallToolResult> => {
+    requireToolScope("get_order_book", authInfo?.scopes ?? []);
     return { content: [{ type: "text", text: "..." }] };
   },
 };
