@@ -7,7 +7,7 @@ interface CreatedClient {
 
 async function getAdminToken(): Promise<string> {
   const res = await fetch(
-    `${process.env.AUTH_HOST}/realms/master/protocol/openid-connect/token`,
+    `https://${process.env.AUTH_HOST}/realms/master/protocol/openid-connect/token`,
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -33,7 +33,7 @@ export async function createAgentClient(
 
   // create the client
   const createRes = await fetch(
-    `${process.env.AUTH_HOST}/admin/realms/${realm}/clients`,
+    `https://${process.env.AUTH_HOST}/admin/realms/${realm}/clients`,
     {
       method: "POST",
       headers: {
@@ -61,7 +61,7 @@ export async function createAgentClient(
 
   // get the created client's UUID
   const clients = await fetch(
-    `${process.env.KEYCLOAK_URL}/admin/realms/${realm}/clients?clientId=${clientId}`,
+    `https://${process.env.AUTH_HOST}/admin/realms/${realm}/clients?clientId=${clientId}`,
     { headers: { Authorization: `Bearer ${adminToken}` } },
   ).then((r) => r.json());
 
@@ -89,7 +89,7 @@ async function assignScopesToServiceAccount(
 ) {
   // get the service account user
   const saRes = await fetch(
-    `${process.env.KEYCLOAK_URL}/admin/realms/${realm}/clients/${clientUUID}/service-account-user`,
+    `https://${process.env.AUTH_HOST}/admin/realms/${realm}/clients/${clientUUID}/service-account-user`,
     { headers: { Authorization: `Bearer ${adminToken}` } },
   );
   const serviceAccount = await saRes.json();
@@ -97,7 +97,7 @@ async function assignScopesToServiceAccount(
 
   // add tier attribute to user for easy identification
   await fetch(
-    `${process.env.KEYCLOAK_URL}/admin/realms/${realm}/users/${userId}`,
+    `https://${process.env.AUTH_HOST}/admin/realms/${realm}/users/${userId}`,
     {
       method: "PUT",
       headers: {
