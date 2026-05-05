@@ -72,6 +72,7 @@ const tokenVerifier = {
       throw new Error("No token verification endpoint available in metadata");
     }
 
+    console.log("[MCP] verify access token");
     const params = new URLSearchParams({
       token: token,
       client_id: CONFIG.auth.clientId,
