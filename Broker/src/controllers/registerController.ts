@@ -45,7 +45,7 @@ export const registerAgent = async (req: Request, res: Response) => {
         client_secret: secret,
         tier,
         scopes: TIER_SCOPES[tier as Tier],
-        token_endpoint: `${process.env.AUTH_HOST}/realms/${process.env.AUTH_REALM}/protocol/openid-connect/token`,
+        token_endpoint: `https://${process.env.AUTH_HOST}/realms/${process.env.AUTH_REALM}/protocol/openid-connect/token`,
       });
     } catch (err) {
       console.error("[register] failed to create agent:", err);
