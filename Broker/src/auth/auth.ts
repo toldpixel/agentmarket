@@ -9,9 +9,9 @@ dotenv.config();
 // config
 const CONFIG = {
   host: process.env.MCP_HOST || "localhost",
-  port: Number(process.env.MCP_PORT) || 5022,
+  port: Number(process.env.MCP_PORT) || 3000,
   auth: {
-    host: process.env.AUTH_HOST || "localhost",
+    host: process.env.AUTH_HOST || process.env.HOST || "localhost",
     port: Number(process.env.AUTH_PORT) || 8080,
     realm: process.env.AUTH_REALM || "exchange",
     clientId: process.env.OAUTH_CLIENT_ID || "mcp-broker",
@@ -124,37 +124,18 @@ const tokenVerifier = {
       throw new Error("Inactive token");
     }
 
-    // Replace the audience check block with this
     if (!data.aud) {
-      // some Keycloak configs don't include aud for client_credentials
-      // if active=true, trust it
-      if (data.active === true) {
-        return {
-          token,
-          clientId: data.client_id,
-          scopes: data.scope ? data.scope.split(" ") : [],
-          expiresAt: data.exp,
-        };
-      }
       throw new Error("Resource indicator (aud) missing");
     }
 
     const audiences: string[] = Array.isArray(data.aud) ? data.aud : [data.aud];
 
-    // Accept either the full URL or the client ID string
-    const allowed = audiences.some((a) => {
-      // check full URL match
-      try {
-        return checkResourceAllowed({
-          requestedResource: a,
-          configuredResource: mcpServerUrl,
-        });
-      } catch {
-        // fallback: accept if aud matches client ID or broker name
-        return a === CONFIG.auth.clientId || a === "mcp-broker";
-      }
-    });
-
+    const allowed = audiences.some((a) =>
+      checkResourceAllowed({
+        requestedResource: a,
+        configuredResource: mcpServerUrl,
+      }),
+    );
     if (!allowed) {
       throw new Error(
         `None of the provided audiences are allowed. Expected ${mcpServerUrl}, got: ${audiences.join(", ")}`,
