@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createMcpExpressApp } from "@modelcontextprotocol/express";
 import express from "express";
 import { registerAllTools } from "./tools/index.js";
-import { router } from "./routes/mcp_endpoints.js";
+import { router } from "./routes/index.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import {
