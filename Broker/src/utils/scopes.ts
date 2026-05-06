@@ -1,5 +1,8 @@
 import { SCOPE_TOOLS } from "../types/tiers.js";
 
+/*
+Not in use - throwing Error instead of handling  
+
 export class InsufficientScopeError extends Error {
   constructor(requiredScope: string, toolName: string) {
     super(
@@ -12,7 +15,7 @@ export class InsufficientScopeError extends Error {
 export function requireToolScope(toolName: string, scopes: string[]) {
   const error = checkToolScope(toolName, scopes);
   if (error) throw new InsufficientScopeError(error, toolName);
-}
+}*/
 
 export function checkToolScope(
   toolName: string,

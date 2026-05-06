@@ -1,5 +1,7 @@
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import { checkToolScope } from "../../utils/scopes.js";
+import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 
 const inputSchema = z.object({
   jobId: z.string().uuid(),
@@ -29,7 +31,21 @@ export const submitCompletion = {
     description: "Worker submits deliverables for a matched job",
     inputSchema,
   },
-  cb: async (args: SubmitCompletionInput): Promise<CallToolResult> => {
+  cb: async (
+    args: SubmitCompletionInput,
+    authInfo?: AuthInfo,
+  ): Promise<CallToolResult> => {
+    const scopeError = checkToolScope(
+      "submit_completion",
+      authInfo?.scopes ?? [],
+    );
+    if (scopeError) {
+      console.log(scopeError);
+      return {
+        isError: true,
+        content: [{ type: "text", text: scopeError }],
+      };
+    }
     return { content: [{ type: "text", text: "..." }] };
   },
 };

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
-import { requireToolScope } from "../../utils/scopes.js";
+import { checkToolScope } from "../../utils/scopes.js";
 
 const inputSchema = z.object({
   jobId: z.string().uuid(),
@@ -26,7 +26,17 @@ export const approveCompletion = {
     args: ApproveCompletionInput,
     authInfo?: AuthInfo,
   ): Promise<CallToolResult> => {
-    requireToolScope("approve_completion", authInfo?.scopes ?? []);
+    const scopeError = checkToolScope(
+      "approve_completion",
+      authInfo?.scopes ?? [],
+    );
+    if (scopeError) {
+      console.log(scopeError);
+      return {
+        isError: true,
+        content: [{ type: "text", text: scopeError }],
+      };
+    }
 
     // tool logic here
     return { content: [{ type: "text", text: "..." }] };
