@@ -1,6 +1,8 @@
 import { SkillSymbolSchema } from "../../types/order.js";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import { checkToolScope } from "../../utils/scopes.js";
+import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 
 const inputSchema = z.object({
   skillSymbol: SkillSymbolSchema,
@@ -47,7 +49,18 @@ export const placeAsk = {
     description: "Poster lists a job requirement on the order book",
     inputSchema,
   },
-  cb: async (args: PlaceAskInput): Promise<CallToolResult> => {
+  cb: async (
+    args: PlaceAskInput,
+    authInfo?: AuthInfo,
+  ): Promise<CallToolResult> => {
+    const scopeError = checkToolScope("place_ask", authInfo?.scopes ?? []);
+    if (scopeError) {
+      console.log(scopeError);
+      return {
+        isError: true,
+        content: [{ type: "text", text: scopeError }],
+      };
+    }
     return { content: [{ type: "text", text: "..." }] };
   },
 };
