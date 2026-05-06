@@ -1,7 +1,7 @@
 import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { requireToolScope } from "../../utils/scopes.js";
+import { checkToolScope, requireToolScope } from "../../utils/scopes.js";
 
 const schema = z.object({
   skillSymbol: z
@@ -27,7 +27,14 @@ export const getOrderBook = {
     { skillSymbol, depth }: z.infer<typeof schema>,
     authInfo?: AuthInfo,
   ): Promise<CallToolResult> => {
-    requireToolScope("get_order_book", authInfo?.scopes ?? []);
+    //requireToolScope("get_order_book", authInfo?.scopes ?? []);
+    const scopeError = checkToolScope("get_order_book", authInfo?.scopes ?? []);
+    if (scopeError) {
+      return {
+        isError: true,
+        content: [{ type: "text", text: scopeError }],
+      };
+    }
     return { content: [{ type: "text", text: "..." }] };
   },
 };

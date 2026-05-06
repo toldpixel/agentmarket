@@ -7,6 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "node:crypto";
 import { InMemoryEventStore } from "@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore";
+import { InsufficientScopeError } from "../utils/scopes.js";
 
 // Map to store transports by session id
 const transports: { [sessionId: string]: NodeStreamableHTTPServerTransport } =
@@ -78,11 +79,23 @@ export const mcpPostHandler = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error handling MCP request:", error);
     if (!res.headersSent) {
+      if (error instanceof InsufficientScopeError) {
+        res.status(403).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32_003,
+            message: error.message,
+          },
+          id: req.body?.id ?? null,
+        });
+        return;
+      }
+
       res.status(500).json({
         jsonrpc: "2.0",
         error: {
           code: -32_603,
-          message: "Internal server error",
+          message: `Internal server error: ${error}`,
         },
         id: null,
       });
