@@ -18,6 +18,7 @@ export function checkToolScope(
   toolName: string,
   scopes: string[],
 ): string | null {
+  console.log("Check scopes: ", scopes);
   const requiredScope = Object.entries(SCOPE_TOOLS).find(([, tools]) =>
     tools.includes(toolName),
   )?.[0];
