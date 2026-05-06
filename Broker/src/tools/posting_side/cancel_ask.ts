@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { checkToolScope } from "../../utils/scopes.js";
+import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 
 const inputSchema = z.object({
   askId: z.string().uuid(),
@@ -14,7 +16,18 @@ export const cancelAsk = {
     description: "Cancel an open ask before it is matched",
     inputSchema,
   },
-  cb: async (args: CancelAskInput): Promise<CallToolResult> => {
+  cb: async (
+    args: CancelAskInput,
+    authInfo?: AuthInfo,
+  ): Promise<CallToolResult> => {
+    const scopeError = checkToolScope("cancel_ask", authInfo?.scopes ?? []);
+    if (scopeError) {
+      console.log(scopeError);
+      return {
+        isError: true,
+        content: [{ type: "text", text: scopeError }],
+      };
+    }
     return { content: [{ type: "text", text: "..." }] };
   },
 };
