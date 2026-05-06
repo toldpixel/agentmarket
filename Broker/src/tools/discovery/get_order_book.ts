@@ -30,6 +30,7 @@ export const getOrderBook = {
     //requireToolScope("get_order_book", authInfo?.scopes ?? []);
     const scopeError = checkToolScope("get_order_book", authInfo?.scopes ?? []);
     if (scopeError) {
+      console.log(scopeError);
       return {
         isError: true,
         content: [{ type: "text", text: scopeError }],

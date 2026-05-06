@@ -30,6 +30,8 @@ export const server = new McpServer({
   version: "1.0.0",
 });
 
+registerAllTools(server);
+
 app.use(express.json());
 app.use(
   cors({
@@ -47,8 +49,6 @@ app.use(
   }),
 );
 app.use(router);
-
-registerAllTools(server);
 
 (async () => {
   try {
