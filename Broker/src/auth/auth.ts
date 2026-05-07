@@ -2,6 +2,7 @@ import { OAuthMetadata } from "@modelcontextprotocol/sdk/shared/auth.js";
 import { checkResourceAllowed } from "@modelcontextprotocol/sdk/shared/auth-utils.js";
 import { getOAuthProtectedResourceMetadataUrl } from "@modelcontextprotocol/sdk/server/auth/router.js";
 import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
+import { OAuthError, OAuthErrorCode } from "@modelcontextprotocol/server";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -94,7 +95,12 @@ const tokenVerifier = {
       console.log("[auth] introspection body:", txt);
 
       if (!response.ok) {
-        throw new Error(`Auth server error ${response.status}: ${txt}`);
+        const body = await response.text();
+        console.error("[auth] introspection failed:", response.status, body);
+        throw new OAuthError(
+          OAuthErrorCode.ServerError,
+          `Auth server error ${response.status}: ${body}`,
+        );
       }
 
       data = JSON.parse(txt);
@@ -105,7 +111,10 @@ const tokenVerifier = {
 
     if (!data.active) {
       console.error("[auth] token inactive");
-      throw new Error("Token inactive or expired");
+      throw new OAuthError(
+        OAuthErrorCode.InvalidToken,
+        "Token inactive or expired",
+      );
     }
 
     const audiences: string[] = data.aud
