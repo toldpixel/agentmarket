@@ -2,7 +2,11 @@ import { OAuthMetadata } from "@modelcontextprotocol/sdk/shared/auth.js";
 import { checkResourceAllowed } from "@modelcontextprotocol/sdk/shared/auth-utils.js";
 import { getOAuthProtectedResourceMetadataUrl } from "@modelcontextprotocol/sdk/server/auth/router.js";
 import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
-import { OAuthError, OAuthErrorCode } from "@modelcontextprotocol/server";
+import {
+  InvalidTokenError,
+  InsufficientScopeError,
+  ServerError,
+} from "@modelcontextprotocol/sdk/server/auth/errors.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -97,10 +101,7 @@ const tokenVerifier = {
       if (!response.ok) {
         const body = await response.text();
         console.error("[auth] introspection failed:", response.status, body);
-        throw new OAuthError(
-          OAuthErrorCode.ServerError,
-          `Auth server error ${response.status}: ${body}`,
-        );
+        throw new ServerError("Introspection failed");
       }
 
       data = JSON.parse(txt);
@@ -109,12 +110,16 @@ const tokenVerifier = {
       throw e;
     }
 
+    // Token expired or inactive
+    // inactive token
     if (!data.active) {
       console.error("[auth] token inactive");
-      throw new OAuthError(
-        OAuthErrorCode.InvalidToken,
-        "Token inactive or expired",
-      );
+      throw new InvalidTokenError("Token inactive or expired");
+    }
+
+    // missing aud
+    if (!data.aud) {
+      throw new InvalidTokenError("Resource indicator (aud) missing");
     }
 
     const audiences: string[] = data.aud
