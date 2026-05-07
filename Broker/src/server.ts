@@ -17,20 +17,21 @@ import {
 
 dotenv.config();
 
-const app = createMcpExpressApp({
-  allowedHosts: ["broker.luchsnode.com"],
-});
-const MCP_PORT = process.env.MCP_PORT
-  ? Number.parseInt(process.env.MCP_PORT, 10)
-  : 3000;
-const HOST = "0.0.0.0";
-
 export const server = new McpServer({
   name: "job_exchange",
   version: "1.0.0",
 });
 
 registerAllTools(server);
+
+const app = createMcpExpressApp({
+  allowedHosts: ["broker.luchsnode.com"],
+});
+
+const MCP_PORT = process.env.MCP_PORT
+  ? Number.parseInt(process.env.MCP_PORT, 10)
+  : 3000;
+const HOST = "0.0.0.0";
 
 app.use(express.json());
 app.use(
@@ -44,10 +45,16 @@ app.use(
   mcpAuthMetadataRouter({
     oauthMetadata,
     resourceServerUrl: mcpServerUrl,
-    scopesSupported: ["mcp:tools"],
-    resourceName: "MCP Demo Server",
+    scopesSupported: [
+      "discovery:market",
+      "posting:side",
+      "worker:side",
+      "mcp:tools",
+    ],
+    resourceName: "Job Exchange MCP Broker",
   }),
 );
+
 app.use(router);
 
 (async () => {
