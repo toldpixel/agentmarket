@@ -88,23 +88,25 @@ const tokenVerifier = {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params.toString(),
       });
+
       const txt = await response.text();
       console.log("[auth] introspection status:", response.status);
       console.log("[auth] introspection body:", txt);
+
+      if (!response.ok) {
+        throw new Error(`Auth server error ${response.status}: ${txt}`);
+      }
+
       data = JSON.parse(txt);
-    } catch (e) {
-      console.error("[auth] introspection failed:", e);
+    } catch (e: any) {
+      console.error("[auth] introspection error:", e.message);
       throw e;
     }
 
     if (!data.active) {
       console.error("[auth] token inactive");
-      throw new Error("Inactive token");
+      throw new Error("Token inactive or expired");
     }
-
-    console.log("[auth] aud:", data.aud);
-    console.log("[auth] scope:", data.scope);
-    console.log("[auth] client_id:", data.client_id);
 
     const audiences: string[] = data.aud
       ? Array.isArray(data.aud)
@@ -112,13 +114,11 @@ const tokenVerifier = {
         : [data.aud]
       : [];
 
-    console.log("[auth] audiences array:", audiences);
-
-    // skip strict audience check for now — just trust active token
-    // add audience enforcement back once we confirm basic flow works
-    if (!data.active) throw new Error("Token not active");
-
+    console.log("[auth] aud:", audiences);
+    console.log("[auth] scope:", data.scope);
+    console.log("[auth] client_id:", data.client_id);
     console.log("[auth] === token accepted ===");
+
     return {
       token,
       clientId: data.client_id,
