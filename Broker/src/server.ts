@@ -27,6 +27,8 @@ export const mcp = new McpServer({
 
 registerAllTools(mcp);
 
+// Custom setRequestHandler for listing Tools. Filtering for scopes,
+// agents only see tools available in their scope
 mcp.server.setRequestHandler(
   ListToolsRequestSchema,
   async (request, context) => {
