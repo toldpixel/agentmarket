@@ -145,6 +145,6 @@ const tokenVerifier = {
 
 export const authMiddleware = requireBearerAuth({
   verifier: tokenVerifier,
-  requiredScopes: ["discovery:market"],
+  requiredScopes: [],
   resourceMetadataUrl: getOAuthProtectedResourceMetadataUrl(mcpServerUrl),
 });
