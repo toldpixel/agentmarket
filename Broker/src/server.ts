@@ -35,15 +35,32 @@ mcp.server.setRequestHandler(
     const scopes = (context as any).authInfo?.scopes ?? [];
     const allowedToolNames = getToolsForScopes(scopes);
 
-    return {
-      tools: allToolDefinitions
-        .filter((tool) => allowedToolNames.includes(tool.name))
-        .map((tool) => ({
+    const tools = allToolDefinitions
+      .filter((tool) => allowedToolNames.includes(tool.name))
+      .map((tool) => {
+        const fullSchema = zodToJsonSchema(tool.config.inputSchema) as any;
+        const { $schema, $ref, definitions, additionalProperties, ...rest } =
+          fullSchema;
+
+        const inputSchema = {
+          type: "object" as const,
+          properties: rest.properties ?? {},
+          ...(rest.required ? { required: rest.required } : {}),
+        };
+
+        console.log(
+          `[tools] ${tool.name} inputSchema:`,
+          JSON.stringify(inputSchema),
+        );
+
+        return {
           name: tool.name,
           description: tool.config.description,
-          inputSchema: zodToJsonSchema(tool.config.inputSchema),
-        })),
-    };
+          inputSchema,
+        };
+      });
+
+    return { tools };
   },
 );
 
