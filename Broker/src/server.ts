@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createMcpExpressApp } from "@modelcontextprotocol/express";
 import express from "express";
-import { registerAllTools } from "./tools/index.js";
+import { allToolDefinitions, registerAllTools } from "./tools/index.js";
 import { router } from "./routes/index.js";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -14,15 +14,36 @@ import {
   mcpAuthMetadataRouter,
   getOAuthProtectedResourceMetadataUrl,
 } from "@modelcontextprotocol/sdk/server/auth/router.js";
+import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types";
+import { getToolsForScopes } from "./utils/scopes.js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 dotenv.config();
 
-export const server = new McpServer({
+export const mcp = new McpServer({
   name: "job_exchange",
   version: "1.0.0",
 });
 
-registerAllTools(server);
+registerAllTools(mcp);
+
+mcp.server.setRequestHandler(
+  ListToolsRequestSchema,
+  async (request, context) => {
+    const scopes = (context as any).authInfo?.scopes ?? [];
+    const allowedToolNames = getToolsForScopes(scopes);
+
+    return {
+      tools: allToolDefinitions
+        .filter((tool) => allowedToolNames.includes(tool.name))
+        .map((tool) => ({
+          name: tool.name,
+          description: tool.config.description,
+          inputSchema: zodToJsonSchema(tool.config.inputSchema),
+        })),
+    };
+  },
+);
 
 const app = createMcpExpressApp({
   allowedHosts: ["broker.luchsnode.com"],

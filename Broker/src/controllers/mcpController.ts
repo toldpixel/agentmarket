@@ -1,12 +1,13 @@
 import type { Response, Request } from "express";
-import { server } from "../server.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { mcp } from "../server.js";
+import { NodeStreamableHTTPServerTransport } from "@modelcontextprotocol/node";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "node:crypto";
 import { InMemoryEventStore } from "@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore";
 
 // Map to store transports by session id
-const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
+const transports: { [sessionId: string]: NodeStreamableHTTPServerTransport } =
+  {};
 
 export const mcpPostHandler = async (req: Request, res: Response) => {
   const sessionId = req.headers["mcp-session-id"] as string | undefined;
@@ -18,14 +19,14 @@ export const mcpPostHandler = async (req: Request, res: Response) => {
   }
 
   try {
-    let transport: StreamableHTTPServerTransport;
+    let transport: NodeStreamableHTTPServerTransport;
     if (sessionId && transports[sessionId]) {
       // Reuse existing transport
       transport = transports[sessionId];
     } else if (!sessionId && isInitializeRequest(req.body)) {
       // New initialization request
       const eventStore = new InMemoryEventStore();
-      transport = new StreamableHTTPServerTransport({
+      transport = new NodeStreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         eventStore,
         onsessioninitialized: (sessionId) => {
@@ -47,7 +48,7 @@ export const mcpPostHandler = async (req: Request, res: Response) => {
         }
       };
 
-      await server.connect(transport);
+      await mcp.connect(transport);
 
       await transport.handleRequest(req, res, req.body);
       return; // Already handled

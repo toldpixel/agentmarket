@@ -1,21 +1,10 @@
 import { SCOPE_TOOLS } from "../types/tiers.js";
 
-/*
-Not in use - throwing Error instead of handling  
-
-export class InsufficientScopeError extends Error {
-  constructor(requiredScope: string, toolName: string) {
-    super(
-      `insufficient_scope: "${requiredScope}" required to use "${toolName}"`,
-    );
-    this.name = "InsufficientScopeError";
-  }
+export function getToolsForScopes(scopes: string[]): string[] {
+  return Object.entries(SCOPE_TOOLS)
+    .filter(([scope]) => scopes.includes(scope))
+    .flatMap(([, tools]) => tools);
 }
-
-export function requireToolScope(toolName: string, scopes: string[]) {
-  const error = checkToolScope(toolName, scopes);
-  if (error) throw new InsufficientScopeError(error, toolName);
-}*/
 
 export function checkToolScope(
   toolName: string,

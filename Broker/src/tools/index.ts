@@ -14,6 +14,18 @@ type ToolDef = {
   cb: (args: any, authInfo?: any) => Promise<any>;
 };
 
+// export all tools as array for filtering
+export const allToolDefinitions: ToolDef[] = [
+  getOrderBook,
+  getMarketStats,
+  placeBid,
+  withdrawBid,
+  submitCompletion,
+  placeAsk,
+  cancelAsk,
+  approveCompletion,
+];
+
 function register(server: McpServer, tool: ToolDef) {
   server.registerTool(tool.name, tool.config, async (args: any, extra: any) =>
     tool.cb(args, extra?.authInfo),

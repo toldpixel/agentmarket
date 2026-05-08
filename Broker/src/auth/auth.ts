@@ -80,6 +80,7 @@ const tokenVerifier = {
     console.log("[auth] clientSecret set:", !!CONFIG.auth.clientSecret);
 
     const endpoint = oauthMetadata.introspection_endpoint!;
+
     const params = new URLSearchParams({
       token,
       client_id: CONFIG.auth.clientId,
