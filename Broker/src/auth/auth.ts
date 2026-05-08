@@ -100,8 +100,7 @@ const tokenVerifier = {
       console.log("[auth] introspection body:", txt);
 
       if (!response.ok) {
-        const body = await response.text();
-        console.error("[auth] introspection failed:", response.status, body);
+        console.error("[auth] introspection failed:", response.status, txt); // ← use txt
         throw new ServerError("Introspection failed");
       }
 
@@ -116,11 +115,6 @@ const tokenVerifier = {
     if (!data.active) {
       console.error("[auth] token inactive");
       throw new InvalidTokenError("Token inactive or expired");
-    }
-
-    // missing aud
-    if (!data.aud) {
-      throw new InvalidTokenError("Resource indicator (aud) missing");
     }
 
     const audiences: string[] = data.aud
