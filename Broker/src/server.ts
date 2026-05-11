@@ -17,9 +17,7 @@ import {
 
 dotenv.config();
 
-const app = createMcpExpressApp({
-  allowedHosts: ["broker.luchsnode.com"],
-});
+const app = express();
 
 const MCP_PORT = process.env.MCP_PORT
   ? Number.parseInt(process.env.MCP_PORT, 10)
