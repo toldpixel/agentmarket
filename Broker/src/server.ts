@@ -14,55 +14,8 @@ import {
   mcpAuthMetadataRouter,
   getOAuthProtectedResourceMetadataUrl,
 } from "@modelcontextprotocol/sdk/server/auth/router.js";
-import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types";
-import { getToolsForScopes } from "./utils/scopes.js";
-import { zodToJsonSchema } from "zod-to-json-schema";
 
 dotenv.config();
-
-export const mcp = new McpServer({
-  name: "job_exchange",
-  version: "1.0.0",
-});
-
-registerAllTools(mcp);
-
-// Custom setRequestHandler for listing Tools. Filtering for scopes,
-// agents only see tools available in their scope
-mcp.server.setRequestHandler(
-  ListToolsRequestSchema,
-  async (request, context) => {
-    const scopes = (context as any).authInfo?.scopes ?? [];
-    const allowedToolNames = getToolsForScopes(scopes);
-
-    const tools = allToolDefinitions
-      .filter((tool) => allowedToolNames.includes(tool.name))
-      .map((tool) => {
-        const fullSchema = zodToJsonSchema(tool.config.inputSchema) as any;
-        const { $schema, $ref, definitions, additionalProperties, ...rest } =
-          fullSchema;
-
-        const inputSchema = {
-          type: "object" as const,
-          properties: rest.properties ?? {},
-          ...(rest.required ? { required: rest.required } : {}),
-        };
-
-        console.log(
-          `[tools] ${tool.name} inputSchema:`,
-          JSON.stringify(inputSchema),
-        );
-
-        return {
-          name: tool.name,
-          description: tool.config.description,
-          inputSchema,
-        };
-      });
-
-    return { tools };
-  },
-);
 
 const app = createMcpExpressApp({
   allowedHosts: ["broker.luchsnode.com"],
