@@ -6,6 +6,8 @@ export function getToolsForScopes(scopes: string[]): string[] {
     .flatMap(([, tools]) => tools);
 }
 
+// Function to check if given scope is available for used tool in SCOPE_TOOLS
+// otherwise the tool returns Error true
 export function checkToolScope(
   toolName: string,
   scopes: string[],

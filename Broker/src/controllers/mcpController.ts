@@ -9,8 +9,10 @@ import { InMemoryEventStore } from "@modelcontextprotocol/sdk/examples/shared/in
 const transports: { [sessionId: string]: NodeStreamableHTTPServerTransport } =
   {};
 
+// Controller to handle Post request for StreamableHTTP MCP
 export const mcpPostHandler = async (req: Request, res: Response) => {
   const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
   if (sessionId) {
     console.log(`Received MCP request for session: ${sessionId}`);
     console.log(`[POST] Command received for session: ${sessionId}`);
