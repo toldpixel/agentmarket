@@ -38,45 +38,32 @@ export function setupToolsListHandler(server: McpServer) {
       const scopes = (context as any).authInfo?.scopes ?? [];
       const allowedToolNames = getToolsForScopes(scopes);
 
-      return {
-        tools: allToolDefinitions
-          .filter((tool) => allowedToolNames.includes(tool.name))
-          .map((tool) => {
-            let inputSchema: any;
+      const tools = allToolDefinitions
+        .filter((tool) => allowedToolNames.includes(tool.name))
+        .map((tool) => {
+          const fullSchema = zodToJsonSchema(tool.config.inputSchema) as any;
+          const { $schema, $ref, definitions, additionalProperties, ...rest } =
+            fullSchema;
 
-            try {
-              const full = zodToJsonSchema(tool.config.inputSchema, {
-                target: "jsonSchema7",
-                $refStrategy: "none", // ← inline all refs, no $ref
-              }) as any;
+          const inputSchema = {
+            type: "object" as const,
+            properties: rest.properties ?? {},
+            ...(rest.required ? { required: rest.required } : {}),
+          };
 
-              const { $schema, definitions, $ref, ...rest } = full;
+          console.log(
+            `[tools] ${tool.name} inputSchema:`,
+            JSON.stringify(inputSchema),
+          );
 
-              inputSchema = {
-                type: "object",
-                properties: rest.properties ?? {},
-                ...(rest.required ? { required: rest.required } : {}),
-              };
-            } catch (err) {
-              console.error(
-                `[tools] failed to convert schema for ${tool.name}:`,
-                err,
-              );
-              inputSchema = { type: "object", properties: {} };
-            }
+          return {
+            name: tool.name,
+            description: tool.config.description,
+            inputSchema,
+          };
+        });
 
-            console.log(
-              `[tools] ${tool.name}:`,
-              JSON.stringify(inputSchema, null, 2),
-            );
-
-            return {
-              name: tool.name,
-              description: tool.config.description,
-              inputSchema,
-            };
-          }),
-      };
+      return { tools };
     },
   );
 }

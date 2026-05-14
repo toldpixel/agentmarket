@@ -37,7 +37,7 @@ export const mcpPostHandler = async (req: Request, res: Response) => {
       });
 
       registerAllTools(mcp);
-      setupToolsListHandler(mcp); // scope filtering for list/tools
+      //setupToolsListHandler(mcp); // scope filtering for list/tools
 
       const transport = new NodeStreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
