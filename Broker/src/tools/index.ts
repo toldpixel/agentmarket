@@ -27,12 +27,18 @@ export const allToolDefinitions: ToolDef[] = [
   approveCompletion,
 ];
 
+// register a single tool with its configuration
 function register(server: McpServer, tool: ToolDef) {
   server.registerTool(tool.name, tool.config, async (args: any, extra: any) =>
     tool.cb(args, extra?.authInfo),
   );
 }
 
+/**
+ *  Register tools for each agent session dependend on the scope
+ *  we filter out allowedTools and register them
+ *  the agent only sees the tools based on the tier
+ */
 export function registerAllTools(server: McpServer, scopes: string[] = []) {
   const allowedTools = getToolsForScopes(scopes);
 

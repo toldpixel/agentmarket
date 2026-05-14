@@ -4,7 +4,6 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { registerAllTools } from "../tools/index.js";
-import { setupToolsListHandler } from "../utils/scopes.js";
 
 //! Only for development not for production
 import { InMemoryEventStore } from "@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore";
