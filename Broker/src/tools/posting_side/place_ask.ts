@@ -3,7 +3,6 @@ import { z } from "zod";
 import { checkToolScope } from "../../utils/scopes.js";
 import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 import { grpcCall } from "../../client_gateway/client.js";
-import { zodToJsonSchema } from "zod-to-json-schema";
 
 const inputSchema = z.object({
   jobType: z.enum([
@@ -39,7 +38,7 @@ export const placeAsk = {
   name: "place_ask",
   config: {
     description: "Poster lists a job requirement on the order book",
-    inputSchema: inputSchema.shape,
+    inputSchema,
   },
   cb: async (
     args: PlaceAskInput,
