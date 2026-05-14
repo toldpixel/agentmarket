@@ -5,44 +5,31 @@ import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 import { JobInputSchema } from "../../types/job.js";
 import { grpcCall } from "../../client_gateway/client.js";
 
-const inputSchema = z
-  .object({
-    jobType: z.enum([
-      "broken_link_check",
-      "email_validation",
-      "webpage_to_markdown",
-      "domain_availability",
-      "keyword_extraction",
-      "language_detection",
-      "readability_score",
-      "duplicate_detection",
-    ]),
-    input: z.record(z.string(), z.unknown()),
-    validator: z
-      .string()
-      .min(1)
-      .describe(
-        "Self-contained script: function validate(output) { return 'pass' or 'fail' }",
-      ),
-    reward: z.number().positive(),
-    deadline: z
-      .number()
-      .int()
-      .positive()
-      .describe("Unix timestamp — when the job expires"),
-  })
-  .superRefine((data, ctx) => {
-    const result = JobInputSchema.safeParse(data);
-    if (!result.success) {
-      for (const issue of result.error.issues) {
-        ctx.addIssue({
-          code: "custom",
-          path: issue.path,
-          message: issue.message,
-        });
-      }
-    }
-  });
+const inputSchema = z.object({
+  jobType: z.enum([
+    "broken_link_check",
+    "email_validation",
+    "webpage_to_markdown",
+    "domain_availability",
+    "keyword_extraction",
+    "language_detection",
+    "readability_score",
+    "duplicate_detection",
+  ]),
+  input: z.record(z.string(), z.unknown()),
+  validator: z
+    .string()
+    .min(1)
+    .describe(
+      "Self-contained script: function validate(output) { return 'pass' or 'fail' }",
+    ),
+  reward: z.number().positive(),
+  deadline: z
+    .number()
+    .int()
+    .positive()
+    .describe("Unix timestamp — when the job expires"),
+});
 
 type PlaceAskInput = z.infer<typeof inputSchema>;
 
