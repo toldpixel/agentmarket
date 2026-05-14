@@ -38,32 +38,45 @@ export function setupToolsListHandler(server: McpServer) {
       const scopes = (context as any).authInfo?.scopes ?? [];
       const allowedToolNames = getToolsForScopes(scopes);
 
-      const tools = allToolDefinitions
-        .filter((tool) => allowedToolNames.includes(tool.name))
-        .map((tool) => {
-          const fullSchema = zodToJsonSchema(tool.config.inputSchema) as any;
-          const { $schema, $ref, definitions, additionalProperties, ...rest } =
-            fullSchema;
+      return {
+        tools: allToolDefinitions
+          .filter((tool) => allowedToolNames.includes(tool.name))
+          .map((tool) => {
+            let inputSchema: any;
 
-          const inputSchema = {
-            type: "object" as const,
-            properties: rest.properties ?? {},
-            ...(rest.required ? { required: rest.required } : {}),
-          };
+            try {
+              const full = zodToJsonSchema(tool.config.inputSchema, {
+                target: "jsonSchema7",
+                $refStrategy: "none", // ← inline all refs, no $ref
+              }) as any;
 
-          console.log(
-            `[tools] ${tool.name} inputSchema:`,
-            JSON.stringify(inputSchema),
-          );
+              const { $schema, definitions, $ref, ...rest } = full;
 
-          return {
-            name: tool.name,
-            description: tool.config.description,
-            inputSchema,
-          };
-        });
+              inputSchema = {
+                type: "object",
+                properties: rest.properties ?? {},
+                ...(rest.required ? { required: rest.required } : {}),
+              };
+            } catch (err) {
+              console.error(
+                `[tools] failed to convert schema for ${tool.name}:`,
+                err,
+              );
+              inputSchema = { type: "object", properties: {} };
+            }
 
-      return { tools };
+            console.log(
+              `[tools] ${tool.name}:`,
+              JSON.stringify(inputSchema, null, 2),
+            );
+
+            return {
+              name: tool.name,
+              description: tool.config.description,
+              inputSchema,
+            };
+          }),
+      };
     },
   );
 }
