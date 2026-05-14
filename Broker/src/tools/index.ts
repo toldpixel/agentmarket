@@ -7,6 +7,7 @@ import { getOrderBook } from "./discovery/get_order_book.js";
 import { approveCompletion } from "./posting_side/approve_completion.js";
 import { cancelAsk } from "./posting_side/cancel_ask.js";
 import { placeAsk } from "./posting_side/place_ask.js";
+import { getToolsForScopes } from "../utils/scopes.js";
 
 type ToolDef = {
   name: string;
@@ -32,18 +33,10 @@ function register(server: McpServer, tool: ToolDef) {
   );
 }
 
-export function registerAllTools(server: McpServer) {
-  // --- Discovery ---
-  register(server, getOrderBook);
-  register(server, getMarketStats);
+export function registerAllTools(server: McpServer, scopes: string[] = []) {
+  const allowedTools = getToolsForScopes(scopes);
 
-  // --- Worker (bid side) ---
-  register(server, placeBid);
-  register(server, withdrawBid);
-  register(server, submitCompletion);
-
-  // --- Poster (ask side) ---
-  register(server, placeAsk);
-  register(server, cancelAsk);
-  register(server, approveCompletion);
+  allToolDefinitions
+    .filter((tool) => allowedTools.includes(tool.name))
+    .forEach((tool) => register(server, tool));
 }

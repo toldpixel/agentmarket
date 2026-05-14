@@ -36,8 +36,11 @@ export const mcpPostHandler = async (req: Request, res: Response) => {
         version: "1.0.0",
       });
 
-      registerAllTools(mcp);
-      //setupToolsListHandler(mcp); // scope filtering for list/tools
+      // get scopes from authInfo attached by middleware
+      const scopes = (req as any).auth?.scopes ?? [];
+
+      // register tools dependend on scope, so that each agent only sees tools necessary
+      registerAllTools(mcp, scopes);
 
       const transport = new NodeStreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
