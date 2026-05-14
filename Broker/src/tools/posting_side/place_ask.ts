@@ -42,7 +42,7 @@ export const placeAsk = {
     inputSchema: inputSchema,
   },
   cb: async (
-    args: PlaceAskInput,
+    { jobType, input, validator, reward, deadline }: PlaceAskInput,
     authInfo?: AuthInfo,
   ): Promise<CallToolResult> => {
     const scopeError = checkToolScope("place_ask", authInfo?.scopes ?? []);
@@ -56,11 +56,11 @@ export const placeAsk = {
       const response = await grpcCall<{ job_id: string; status: string }>(
         "PlaceAsk",
         {
-          job_type: args.jobType,
-          input: JSON.stringify(args.input),
-          validator: args.validator,
-          reward: args.reward,
-          deadline: args.deadline,
+          job_type: jobType,
+          input: JSON.stringify(input),
+          validator: validator,
+          reward: reward,
+          deadline: deadline,
           poster_id: posterId, // ← injected from token
         },
       );
