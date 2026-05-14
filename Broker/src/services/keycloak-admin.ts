@@ -5,6 +5,7 @@ interface CreatedClient {
   secret: string;
 }
 
+// Get the token for the admin account to register the agent in keycloak
 async function getAdminToken(): Promise<string> {
   const res = await fetch(
     `https://${process.env.AUTH_HOST}/realms/master/protocol/openid-connect/token`,
@@ -31,7 +32,7 @@ export async function createAgentClient(
   const clientId = `agent-${tier}-${agentName}-${crypto.randomUUID().slice(0, 8)}`;
   const secret = crypto.randomUUID();
 
-  // create the client
+  // create the client with the admin account
   const createRes = await fetch(
     `https://${process.env.AUTH_HOST}/admin/realms/${realm}/clients`,
     {

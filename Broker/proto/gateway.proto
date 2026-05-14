@@ -1,0 +1,123 @@
+// proto/gateway.proto
+syntax = "proto3";
+
+package gateway;
+
+service ClientGateway {
+  // broker calls these
+  rpc PlaceAsk      (PlaceAskRequest)      returns (PlaceAskResponse);
+  rpc CancelAsk     (CancelAskRequest)     returns (CancelAskResponse);
+  rpc GetOrderBook  (OrderBookRequest)     returns (OrderBookResponse);
+  rpc PlaceBid      (PlaceBidRequest)      returns (PlaceBidResponse);
+  rpc WithdrawBid   (WithdrawBidRequest)   returns (WithdrawBidResponse);
+  rpc SubmitResult  (SubmitResultRequest)  returns (SubmitResultResponse);
+  rpc ApproveResult (ApproveResultRequest) returns (ApproveResultResponse);
+
+  // streaming — worker gets notified when job is assigned
+  rpc WatchJobs (WatchJobsRequest) returns (stream JobEvent);
+}
+
+enum JobType {
+  BROKEN_LINK_CHECK   = 0;
+  EMAIL_VALIDATION    = 1;
+  WEBPAGE_TO_MARKDOWN = 2;
+  DOMAIN_AVAILABILITY = 3;
+  KEYWORD_EXTRACTION  = 4;
+  LANGUAGE_DETECTION  = 5;
+  READABILITY_SCORE   = 6;
+  DUPLICATE_DETECTION = 7;
+}
+
+enum JobStatus {
+  OPEN      = 0;
+  MATCHED   = 1;
+  SUBMITTED = 2;
+  VALIDATED = 3;
+  COMPLETED = 4;
+  FAILED    = 5;
+  CANCELLED = 6;
+}
+
+message Job {
+  string   job_id    = 1;
+  JobType  job_type  = 2;
+  string   input     = 3;  // JSON string — flat object
+  string   validator = 4;  // self-contained validation script
+  double   reward    = 5;
+  int64    deadline  = 6;
+  string   poster_id = 7;
+  JobStatus status   = 8;
+  int64    created_at = 9;
+}
+
+message PlaceAskRequest {
+  JobType job_type  = 1;
+  string  input     = 2;
+  string  validator = 3;
+  double  reward    = 4;
+  int64   deadline  = 5;
+  string  poster_id = 6;
+}
+
+message PlaceAskResponse {
+  string    job_id  = 1;
+  JobStatus status  = 2;
+}
+
+message OrderBookRequest {
+  JobType job_type = 1;
+  int32   depth    = 2;
+}
+
+message OrderBookResponse {
+  repeated OrderBookEntry entries = 1;
+}
+
+message OrderBookEntry {
+  string job_id       = 1;
+  double reward       = 2;
+  int64  deadline     = 3;
+  repeated string input_keys = 4;  // preview only, not full input
+}
+
+message PlaceBidRequest {
+  string job_id    = 1;
+  string worker_id = 2;
+  double price     = 3;
+}
+
+message PlaceBidResponse {
+  bool   accepted  = 1;
+  string job_id    = 2;
+  string message   = 3;
+}
+
+message SubmitResultRequest {
+  string job_id    = 1;
+  string worker_id = 2;
+  string output    = 3;  // JSON string
+}
+
+message SubmitResultResponse {
+  bool   passed    = 1;
+  string job_id    = 2;
+  string message   = 3;
+}
+
+message WatchJobsRequest {
+  string worker_id = 1;
+  repeated JobType job_types = 2;
+}
+
+message JobEvent {
+  string job_id   = 1;
+  JobStatus status = 2;
+  string input    = 3;  // only sent when job is matched
+}
+
+message CancelAskRequest   { string job_id = 1; string poster_id = 2; }
+message CancelAskResponse  { bool success  = 1; }
+message WithdrawBidRequest { string job_id = 1; string worker_id = 2; }
+message WithdrawBidResponse { bool success = 1; }
+message ApproveResultRequest { string job_id = 1; string poster_id = 2; double quality_score = 3; string feedback = 4; }
+message ApproveResultResponse { bool success = 1; }

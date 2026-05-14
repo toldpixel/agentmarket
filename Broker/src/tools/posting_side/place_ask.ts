@@ -46,6 +46,9 @@ const inputSchema = z
 
 type PlaceAskInput = z.infer<typeof inputSchema>;
 
+/**
+ * Tool for placing a job
+ */
 export const placeAsk = {
   name: "place_ask",
   config: {
