@@ -2,7 +2,6 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { checkToolScope } from "../../utils/scopes.js";
 import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
-import { JobInputSchema } from "../../types/job.js";
 import { grpcCall } from "../../client_gateway/client.js";
 
 const inputSchema = z.object({
@@ -40,7 +39,7 @@ export const placeAsk = {
   name: "place_ask",
   config: {
     description: "Poster lists a job requirement on the order book",
-    inputSchema,
+    inputSchema: inputSchema,
   },
   cb: async (
     args: PlaceAskInput,
