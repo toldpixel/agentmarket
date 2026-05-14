@@ -3,6 +3,7 @@ import { z } from "zod";
 import { checkToolScope } from "../../utils/scopes.js";
 import { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types";
 import { grpcCall } from "../../client_gateway/client.js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 const inputSchema = z.object({
   jobType: z.enum([
@@ -31,7 +32,6 @@ const inputSchema = z.object({
 });
 
 type PlaceAskInput = z.infer<typeof inputSchema>;
-
 /**
  * Tool for placing a job
  */
@@ -39,10 +39,10 @@ export const placeAsk = {
   name: "place_ask",
   config: {
     description: "Poster lists a job requirement on the order book",
-    inputSchema: inputSchema,
+    inputSchema: inputSchema.shape,
   },
   cb: async (
-    { jobType, input, validator, reward, deadline }: PlaceAskInput,
+    args: PlaceAskInput,
     authInfo?: AuthInfo,
   ): Promise<CallToolResult> => {
     const scopeError = checkToolScope("place_ask", authInfo?.scopes ?? []);
@@ -56,11 +56,11 @@ export const placeAsk = {
       const response = await grpcCall<{ job_id: string; status: string }>(
         "PlaceAsk",
         {
-          job_type: jobType,
-          input: JSON.stringify(input),
-          validator: validator,
-          reward: reward,
-          deadline: deadline,
+          job_type: args.jobType,
+          input: JSON.stringify(args.input),
+          validator: args.validator,
+          reward: args.reward,
+          deadline: args.deadline,
           poster_id: posterId, // ← injected from token
         },
       );
