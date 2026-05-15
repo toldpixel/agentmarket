@@ -21,13 +21,19 @@ services:
       - traefik.http.routers.broker.tls.certresolver=letsencrypt
       - traefik.http.services.broker.loadbalancer.server.port=5022
   client-gateway:
-    build: ./client-gateway
+    build: 
+      context: ./ClientGateway
+      dockerfile: Dockerfile
     container_name: client_gateway
+    env_file:
+      - ./ClientGateway/.env
     restart: unless-stopped
     environment:
-      GRPC_PORT: 50051
+      NODE_ENV: production
+    command: >
+      bash -c "npm run start"
     networks:
-      - internal
+      - web
 
 networks:
   web:
