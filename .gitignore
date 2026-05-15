@@ -3,4 +3,7 @@ Broker/.env
 Broker/.env.local
 Broker/.env*.local
 
+ClientGateway/.env
+ClientGateway/node_modules/
+
 .github/

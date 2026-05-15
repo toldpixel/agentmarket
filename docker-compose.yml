@@ -20,6 +20,14 @@ services:
       - traefik.http.routers.broker.tls=true
       - traefik.http.routers.broker.tls.certresolver=letsencrypt
       - traefik.http.services.broker.loadbalancer.server.port=5022
+  client-gateway:
+    build: ./client-gateway
+    container_name: client_gateway
+    restart: unless-stopped
+    environment:
+      GRPC_PORT: 50051
+    networks:
+      - internal
 
 networks:
   web:
