@@ -25,4 +25,4 @@ jobs:
             git fetch origin master
             git reset --hard origin/master
             docker compose up -d --build broker
-            docker compose up -d --build client_gateway
+            docker compose up -d --build client-gateway
